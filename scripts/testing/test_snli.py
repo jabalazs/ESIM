@@ -8,11 +8,16 @@ import pickle
 import argparse
 import torch
 
+import numpy as np
+
 from torch.utils.data import DataLoader
 from esim.data import NLIDataset
 from esim.model import ESIM
 from esim.utils import correct_predictions
 
+# NEEDS TO MACH `config/preprocessing/bnli_preprocessing.json`
+LABEL2ID = {"entailment": 0, "neutral": 1, "contradiction": 2}
+ID2LABEL = {value: key for key, value in LABEL2ID.items()}
 
 def test(model, dataloader):
     """
@@ -37,6 +42,7 @@ def test(model, dataloader):
 
     # Deactivate autograd for evaluation.
     with torch.no_grad():
+        prob_list = []
         for batch in dataloader:
             batch_start = time.time()
 
@@ -52,14 +58,16 @@ def test(model, dataloader):
                              hypotheses,
                              hypotheses_lengths)
 
+            prob_list.append(probs.cpu().detach().numpy())
             accuracy += correct_predictions(probs, labels)
             batch_time += time.time() - batch_start
 
+    probs = np.vstack(prob_list)
     batch_time /= len(dataloader)
     total_time = time.time() - time_start
     accuracy /= (len(dataloader.dataset))
 
-    return batch_time, total_time, accuracy
+    return batch_time, total_time, accuracy, probs
 
 
 def main(test_file, pretrained_file, batch_size=32):
@@ -109,7 +117,12 @@ def main(test_file, pretrained_file, batch_size=32):
     print(20 * "=",
           " Testing ESIM model on device: {} ".format(device),
           20 * "=")
-    batch_time, total_time, accuracy = test(model, test_loader)
+    batch_time, total_time, accuracy, probs = test(model, test_loader)
+    pred_ids = np.argmax(probs, axis=1).tolist()
+    pred_labels = [ID2LABEL[id_] for id_ in pred_ids]
+    with open("esim_predictions.txt", "w") as f:
+        for label in pred_labels:
+            f.write(label + "\n")
 
     print("-> Average batch processing time: {:.4f}s, total test time:\
  {:.4f}s, accuracy: {:.4f}%".format(batch_time, total_time, (accuracy*100)))

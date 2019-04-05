@@ -35,9 +35,9 @@ used to preprocess SNLI, *preprocess_mnli.py* to preprocess MultiNLI, and *prepr
 (BNLI) dataset. Note that when calling the script fot BNLI, the SNLI data should have been preprocessed first, so that the 
 worddict produced for it can be used on BNLI.
 
-The scripts' usage is the following (replace the \* with *snli*, *mnli* or *bnli*):
+The scripts' usage is the following (replace the \* with *snli*, *mnli* or *bnli*); execute from the top directory:
 ```
-preprocess_*.py [-h] [--config CONFIG]
+PYTHONPATH=. scripts/preprocessing/preprocess_*.py [-h] [--config CONFIG]
 ```
 where `config` is the path to a configuration file defining the parameters to be used for preprocessing. Default 
 configuration files can be found in the *config/preprocessing* folder of this repository.
@@ -46,9 +46,9 @@ configuration files can be found in the *config/preprocessing* folder of this re
 The *train_\*.py* scripts in the *scripts/training* folder can be used to train the ESIM model on some training data and 
 validate it on some validation data.
 
-The script's usage is the following (replace the \* with *snli* or *mnli*):
+The script's usage is the following (replace the \* with *snli* or *mnli*); execute from the top directory:
 ```
-train_*.py [-h] [--config CONFIG] [--checkpoint CHECKPOINT]
+PYTHONPATH=. scripts/training/train_*.py [-h] [--config CONFIG] [--checkpoint CHECKPOINT]
 ```
 where `config` is a configuration file (default ones are located in the *config/training* folder), and `checkpoint` is an 
 optional checkpoint from which training can be resumed. Checkpoints are created by the script after each training epoch, with 
@@ -59,18 +59,18 @@ The *test_\*.py* scripts in the *scripts/testing* folder can be used to test a p
 
 To test on SNLI, use the *test_snli.py* script as follows:
 ```
-test_snli.py [-h] test_data checkpoint
+PYTHONPATH=. scripts/testing/test_snli.py [-h] test_data checkpoint
 ```
 where `test_data` is the path to some preprocessed test set, and `checkpoint` is the path to a checkpoint produced by the 
 *train_snli.py* script (either one of the checkpoints created after the training epochs, or the best model seen during 
 training, which is saved in *data/checkpoints/SNLI/best.pth.tar* - the difference between the *esim_\*.pth.tar* files and 
 *best.pth.tar* is that the latter cannot be used to resume training, as it doesn't contain the optimizer's state).
 
-The *test_snli.py* script can also be used on the Breaking NLI dataset with a model pretrained on SNLI.
+The *test_snli.py* script can also be used on the Breaking NLI (BNLI) dataset with a model pretrained on SNLI. Whenever testing on SNLI this script will generate a file `esim_predictions.txt` containing the predicted labels for each training example.
 
 To test on MultiNLI, use the *test_mnli.py* script as follows:
 ```
-test_mnli.py [-h] [--config CONFIG] checkpoint
+PYTHONPATH=. scripts/testing/test_mnli.py [-h] [--config CONFIG] checkpoint
 ```
 where `config` is a configuration file (a default one is available in *config/testing*) and `checkpoint` is a checkpoint 
 produced by the *train_mnli.py* script.
